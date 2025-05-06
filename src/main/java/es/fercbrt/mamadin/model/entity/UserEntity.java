@@ -1,8 +1,10 @@
 package es.fercbrt.mamadin.model.entity;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.Column;
@@ -38,12 +40,6 @@ public class UserEntity implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        // TODO: Return a basic granted authority as a normal user
-        return null;
-    }
-
     @ManyToMany
     @JoinTable(
             name = "user_roles",
@@ -55,6 +51,13 @@ public class UserEntity implements UserDetails {
                 )
             )
     private Collection<RoleEntity> roles;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles.stream()
+                .map(roleEntity -> new SimpleGrantedAuthority(roleEntity.getName()))
+                .collect(Collectors.toList());
+    }
 
     @Override
     public String getUsername() {
